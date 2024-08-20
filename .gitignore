@@ -1,0 +1,29 @@
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Typescript compiled files
+dist/
+
+# MacOS specific files
+.DS_Store
+
+# IDE-specific files (optional, adjust based on your IDE)
+.vscode/
+.idea/
+
