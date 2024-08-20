@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+\import express, { Request, Response } from 'express';
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
@@ -25,16 +25,17 @@ app.get('/users', async (req: Request, res: Response) => {
     const result = await pool.query('SELECT * FROM users');
     res.json(result.rows);
   } catch (err) {
-    const error = err as Error;
-    console.error('Error executing query', error.stack);
+    console.error('Error executing query', err instanceof Error ? err.stack : err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+// Start the server (this line is for local development)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+  });
+}
 
-// Export the pool to use it in other parts of your app if needed
-export default pool;
+// Export the app for Vercel
+export default app;
