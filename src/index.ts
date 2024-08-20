@@ -1,4 +1,4 @@
-\import express, { Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
@@ -18,6 +18,11 @@ const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+
+app.get('/', (req: Request, res: Response) => {
+  res.send('Welcome to the Express App!');
+});
+
 
 // Example route to test database connection
 app.get('/users', async (req: Request, res: Response) => {
