@@ -14,12 +14,22 @@ const pool = new Pool({
 
 // GET all students
 router.get('/', async (req: Request, res: Response) => {
+  const grade = req.query.grade as string;
+
   try {
-    const result = await pool.query('SELECT * FROM students');
+    let query = 'SELECT * FROM students';
+    let params: any[] = [];
+
+    if (grade) {
+      query += 'WHERE grade = $1';
+      params.push(grade);
+    }
+
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (err) {
     console.error('Error executing query:', err instanceof Error ? err.stack : err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Internal Server Error'});
   }
 });
 
