@@ -40,18 +40,44 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// POST a new student
+// POST one or multiple students
 router.post('/', async (req: Request, res: Response) => {
-  const { name, grade } = req.body;
+  const newStudents = Array.isArray(req.body) ? req.body : [req.body]; // Handle both single and multiple students
+
+  // Validate that the request body contains students
+  if (newStudents.length === 0) {
+    return res.status(400).json({ error: 'Request body must contain at least one student' });
+  }
 
   try {
-    const result = await pool.query('INSERT INTO students (name, grade) VALUES ($1, $2) RETURNING *', [name, grade]);
-    res.status(201).json(result.rows[0]);
+    // Begin transaction to ensure atomicity
+    await pool.query('BEGIN');
+    
+    const insertedStudents = [];
+    for (const student of newStudents) {
+      const { name, grade } = student;
+
+      // Ensure that both name and grade are provided
+      if (!name || !grade) {
+        await pool.query('ROLLBACK'); // Rollback transaction in case of error
+        return res.status(400).json({ error: 'Each student must have a name and grade' });
+      }
+
+      // Insert the student into the database
+      const result = await pool.query('INSERT INTO students (name, grade) VALUES ($1, $2) RETURNING *', [name, grade]);
+      insertedStudents.push(result.rows[0]);
+    }
+
+    // Commit transaction
+    await pool.query('COMMIT');
+    res.status(201).json(insertedStudents.length === 1 ? insertedStudents[0] : insertedStudents); // Return single student or array of students
   } catch (err) {
     console.error('Error executing query:', err instanceof Error ? err.stack : err);
+    await pool.query('ROLLBACK'); // Rollback transaction in case of error
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 // PUT to update a student's grade
 router.put('/:id', async (req: Request, res: Response) => {
