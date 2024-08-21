@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
 import studentRoutes from './routes/students'; // Import the students routes
-
+import logRequest from './middleware/logRequest';
 
 // Load environment variables from .env file (for local development)
 dotenv.config();
@@ -20,6 +20,9 @@ const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+
+app.use(logRequest);
+
 
 app.use('/api/students', studentRoutes);
 
