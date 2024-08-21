@@ -21,7 +21,7 @@ router.get('/', async (req: Request, res: Response) => {
     let params: any[] = [];
 
     if (grade) {
-      query += 'WHERE grade = $1';
+      query += ' WHERE grade = $1';  // Added space before WHERE
       params.push(grade);
     }
 
@@ -29,9 +29,10 @@ router.get('/', async (req: Request, res: Response) => {
     res.json(result.rows);
   } catch (err) {
     console.error('Error executing query:', err instanceof Error ? err.stack : err);
-    res.status(500).json({ error: 'Internal Server Error'});
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 // GET a specific student by ID
 router.get('/:id', async (req: Request, res: Response) => {
