@@ -20,8 +20,8 @@ app.get('/', (req, res) => {
 });
 
 // Load SSL certificates
-const privateKey = fs.readFileSync('privatekey.pem', 'utf8');
-const certificate = fs.readFileSync('cert.pem', 'utf8');
+const privateKey = fs.readFileSync(__dirname + '/privatekey.pem', 'utf8');
+const certificate = fs.readFileSync(__dirname + '/cert.pem', 'utf8');
 
 // Create HTTPS server
 https.createServer({

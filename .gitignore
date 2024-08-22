@@ -27,3 +27,5 @@ dist/
 .vscode/
 .idea/
 
+privatekey.pem
+cert.pem
