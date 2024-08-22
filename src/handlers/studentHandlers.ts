@@ -21,6 +21,7 @@ export const getAllStudents = async (req: Request, res: Response) => {
       params.push(grade);
     }
 
+
     const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (err) {
