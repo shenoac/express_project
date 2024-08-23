@@ -35,17 +35,15 @@ const server = https.createServer(credentials, app);
 // Initialize WebSocket server
 const wss = new WebSocketServer({ server });
 
+
 wss.on('connection', (ws) => {
   console.log('New WebSocket connection established');
 
-  // Handle incoming messages from clients
   ws.on('message', (message) => {
     console.log(`Received: ${message}`);
-    // Echo the message back to the client
     ws.send(`Server says: ${message}`);
   });
 
-  // Handle connection close
   ws.on('close', () => {
     console.log('WebSocket connection closed');
   });

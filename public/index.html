@@ -37,21 +37,36 @@
   <button onclick="sendMessage()">Send</button>
 
   <script>
-    const ws = new WebSocket('wss://localhost:3000');
-    const chat = document.getElementById('chat');
-    const messageInput = document.getElementById('message');
+    const socket = new WebSocket(`wss://${window.location.host}`); // Dynamic WebSocket URL
 
-    ws.onmessage = function(event) {
-      const msg = document.createElement('p');
-      msg.textContent = event.data;
-      chat.appendChild(msg);
-      chat.scrollTop = chat.scrollHeight;
+    socket.onopen = function() {
+        console.log("WebSocket is open now.");
+        document.getElementById('chat').innerHTML += "<p>Connected to the server</p>";
+    };
+
+    socket.onmessage = function(event) {
+        console.log("Received from server: " + event.data);
+        document.getElementById('chat').innerHTML += `<p>Server: ${event.data}</p>`;
+    };
+
+    socket.onclose = function() {
+        console.log("WebSocket is closed now.");
+        document.getElementById('chat').innerHTML += "<p>Disconnected from the server</p>";
+    };
+
+    socket.onerror = function(error) {
+        console.error("WebSocket error observed:", error);
     };
 
     function sendMessage() {
-      const message = messageInput.value;
-      ws.send(message);
-      messageInput.value = '';
+        const message = document.getElementById('message').value;
+        if (message && socket.readyState === WebSocket.OPEN) {
+            socket.send(message);
+            document.getElementById('chat').innerHTML += `<p>You: ${message}</p>`;
+            document.getElementById('message').value = ''; // Clear the input field
+        } else {
+            alert("WebSocket is not connected or message is empty.");
+        }
     }
   </script>
 </body>
