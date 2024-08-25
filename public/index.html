@@ -12,21 +12,50 @@
       align-items: center;
       margin: 0;
       padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
     }
     #chat {
       width: 80%;
       max-width: 600px;
+      height: 200px; /* Smaller height */
       border: 1px solid #ddd;
       padding: 10px;
-      height: 300px;
       overflow-y: auto;
       margin-bottom: 10px;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 15px; /* Rounded border */
+    }
+    #chat p {
+      margin: 5px 0;
+      padding: 5px 10px;
+      border-radius: 10px;
     }
     #message {
       width: 80%;
       max-width: 600px;
       padding: 10px;
       margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+      resize: none; /* Prevent manual resizing */
+      overflow: hidden; /* Hide overflow as the input expands */
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #ffcccc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
@@ -68,6 +97,7 @@
             alert("WebSocket is not connected or message is empty.");
         }
     }
+
   </script>
 </body>
 </html>
