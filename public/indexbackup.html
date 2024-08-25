@@ -67,23 +67,10 @@
   <button onclick="sendMessage()">Send</button>
 
   <script>
-    let username = ""; // Variable to store the username
-
-    // Prompt the user for their username when they connect
-    function askForUsername() {
-      username = prompt("Please enter your username:");
-      if (!username) {
-        username = "Anonymous"; // Default username if none is provided
-      }
-      document.getElementById('chat').innerHTML += `<p><strong>Welcome, ${username}!</strong></p>`;
-    }
-
-    // Initialize WebSocket connection
-    const socket = new WebSocket(`wss://${window.location.host}`);
+    const socket = new WebSocket(`wss://${window.location.host}`); // Dynamic WebSocket URL
 
     socket.onopen = function() {
         console.log("WebSocket is open now.");
-        askForUsername(); // Ask for username once the connection is open
         document.getElementById('chat').innerHTML += "<p>Connected to the server</p>";
     };
 
@@ -101,18 +88,17 @@
         console.error("WebSocket error observed:", error);
     };
 
-    // Function to send a message with the username
     function sendMessage() {
         const message = document.getElementById('message').value;
         if (message && socket.readyState === WebSocket.OPEN) {
-            const formattedMessage = `${username}: ${message}`; // Add username to the message
-            socket.send(formattedMessage);
-            document.getElementById('chat').innerHTML += `<p>${username}: ${message}</p>`;
+            socket.send(message);
+            document.getElementById('chat').innerHTML += `<p>You: ${message}</p>`;
             document.getElementById('message').value = ''; // Clear the input field
         } else {
             alert("WebSocket is not connected or message is empty.");
         }
     }
+
   </script>
 </body>
 </html>
