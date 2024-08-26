@@ -76,7 +76,6 @@
         username = "Anonymous"; // Default username if none is provided
       }
       document.getElementById('chat').innerHTML += `<p><strong>Welcome, ${username}!</strong></p>`;
-      socket.send(JSON.stringify({ type: 'username', data: username })); // Send the username to the server
     }
 
     // Initialize WebSocket connection
@@ -89,14 +88,8 @@
     };
 
     socket.onmessage = function(event) {
-        const msgData = JSON.parse(event.data); // Parse the incoming message
-        if (msgData.type === 'message') {
-            // Display user messages
-            document.getElementById('chat').innerHTML += `<p><strong>${msgData.username}:</strong> ${msgData.data}</p>`;
-        } else if (msgData.type === 'notification') {
-            // Display notifications
-            document.getElementById('chat').innerHTML += `<p><em>${msgData.data}</em></p>`;
-        }
+        console.log("Received from server: " + event.data);
+        document.getElementById('chat').innerHTML += `<p>Server: ${event.data}</p>`;
     };
 
     socket.onclose = function() {
@@ -112,10 +105,9 @@
     function sendMessage() {
         const message = document.getElementById('message').value;
         if (message && socket.readyState === WebSocket.OPEN) {
-            const timestamp = new Date().toISOString(); // Optional: Add a timestamp if needed
-            const formattedMessage = { type: 'message', data: message, timestamp }; // JSON format message
-            socket.send(JSON.stringify(formattedMessage)); // Send message as JSON
-            document.getElementById('chat').innerHTML += `<p><strong>${username}:</strong> ${message}</p>`;
+            const formattedMessage = `${username}: ${message}`; // Add username to the message
+            socket.send(formattedMessage);
+            document.getElementById('chat').innerHTML += `<p>${username}: ${message}</p>`;
             document.getElementById('message').value = ''; // Clear the input field
         } else {
             alert("WebSocket is not connected or message is empty.");

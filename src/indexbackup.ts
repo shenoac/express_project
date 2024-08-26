@@ -34,48 +34,30 @@ wss.on('connection', (ws) => {
   clients.add(ws);
   console.log('New WebSocket connection established');
 
-  let username: string;
+  // Broadcast to all other clients that a new user has joined
+  broadcast('A new user has joined the chat', ws);
 
   ws.on('message', (message) => {
-    try {
-      const msgData = JSON.parse(message.toString());
-      console.log('Received message:', msgData);
-
-      // Handle incoming username
-      if (msgData.type === 'username') {
-        username = msgData.data;
-        broadcast({ type: 'notification', data: `${username} has joined the chat` }, ws);
-      } else if (msgData.type === 'message') {
-        // Broadcast user messages
-        broadcast({ type: 'message', username, data: msgData.data, timestamp: msgData.timestamp }, ws);
-      }
-    } catch (error) {
-      console.error('Error parsing message:', error);
-      ws.send(JSON.stringify({ type: 'error', data: 'Invalid message format' }));
-    }
+    console.log(`Received: ${message}`);
+    // Broadcast the received message to all other clients
+    broadcast(message.toString(), ws);
   });
 
   ws.on('close', () => {
     clients.delete(ws);
     console.log('WebSocket connection closed');
-    if (username) {
-      broadcast({ type: 'notification', data: `${username} has left the chat` }, ws);
-    }
+    // Notify other clients that a user has left
+    broadcast('A user has left the chat', ws);
   });
 });
 
 // Function to broadcast messages to all clients except the sender
-function broadcast(message: any, sender: WebSocket) {
+function broadcast(message: string, sender: WebSocket) {
   clients.forEach((client) => {
     if (client !== sender && client.readyState === WebSocket.OPEN) {
-      try {
-        client.send(JSON.stringify(message));
-      } catch (error) {
-        console.error('Error sending message:', error);
-      }
+      client.send(message);
     }
   });
 }
 
 export default app;
-
