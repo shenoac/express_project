@@ -34,28 +34,34 @@ wss.on('connection', (ws) => {
   clients.add(ws);
   console.log('New WebSocket connection established');
 
-  // Broadcast to all other clients that a new user has joined
-  broadcast('A new user has joined the chat', ws);
+  let username: string;
 
   ws.on('message', (message) => {
-    console.log(`Received: ${message}`);
-    // Broadcast the received message to all other clients
-    broadcast(message.toString(), ws);
+    const msgData = JSON.parse(message.toString());
+
+    if (msgData.type === 'username') {
+      username = msgData.data;
+      // Notify all clients that a new user has joined
+      broadcast({ type: 'notification', data: `${username} has joined the chat` }, ws);
+    } else if (msgData.type === 'message') {
+      // Broadcast the user's message to all clients
+      broadcast({ type: 'message', username, data: msgData.data, timestamp: msgData.timestamp }, ws);
+    }
   });
 
   ws.on('close', () => {
     clients.delete(ws);
     console.log('WebSocket connection closed');
     // Notify other clients that a user has left
-    broadcast('A user has left the chat', ws);
+    broadcast({ type: 'notification', data: `${username} has left the chat` }, ws);
   });
 });
 
 // Function to broadcast messages to all clients except the sender
-function broadcast(message: string, sender: WebSocket) {
+function broadcast(message: any, sender: WebSocket) {
   clients.forEach((client) => {
     if (client !== sender && client.readyState === WebSocket.OPEN) {
-      client.send(message);
+      client.send(JSON.stringify(message));
     }
   });
 }
