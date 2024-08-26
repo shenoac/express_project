@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WebSocket Chat</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -17,12 +16,7 @@
     }
 
     h1 {
-      color: #ffcccc;
-      display: flex;
-      align-items: center;
-    }
-    h1 i {
-      margin-right: 10px;
+      color: #333;
     }
     #chat {
       width: 80%;
@@ -67,12 +61,12 @@
   </style>
 </head>
 <body>
-  <h1><i class="fas fa-comment"></i> Chat!</h1>
+  <h1>Chat!</h1>
   <div id="chat"></div>
   <input type="text" id="message" placeholder="Type your message...">
   <button onclick="sendMessage()">Send</button>
 
-    <script>
+  <script>
     let username = ""; // Variable to store the username
 
     // Prompt the user for their username when they connect
