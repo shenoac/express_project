@@ -86,7 +86,12 @@
     }
 
     // Initialize WebSocket connection
-    const socket = new WebSocket(`wss://${window.location.host}`);
+    const socket = new WebSocket(
+        window.location.host.includes('localhost')
+            ? `ws://localhost:3000`
+            : `wss://${window.location.host}`
+);
+
 
     socket.onopen = function() {
         console.log("WebSocket is open now.");
