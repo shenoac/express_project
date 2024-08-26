@@ -97,8 +97,8 @@
     socket.onmessage = function(event) {
         const msgData = JSON.parse(event.data); // Parse the incoming message
         if (msgData.type === 'message') {
-            // Display user messages
-            document.getElementById('chat').innerHTML += `<p><strong>${msgData.username}:</strong> ${msgData.data}</p>`;
+            // Display user messages with timestamp
+            document.getElementById('chat').innerHTML += `<p><strong>${msgData.username}:</strong> ${msgData.data} <small>${msgData.timestamp}</small></p>`;
         } else if (msgData.type === 'notification') {
             // Display notifications
             document.getElementById('chat').innerHTML += `<p><em>${msgData.data}</em></p>`;
@@ -114,18 +114,24 @@
         console.error("WebSocket error observed:", error);
     };
 
-    // Function to send a message with the username
+    // Function to send a message with the username and timestamp
     function sendMessage() {
         const message = document.getElementById('message').value;
         if (message && socket.readyState === WebSocket.OPEN) {
-            const timestamp = new Date().toISOString(); // Optional: Add a timestamp if needed
-            const formattedMessage = { type: 'message', data: message, timestamp }; // JSON format message
+            const timestamp = getCurrentTimestamp(); // Get the current timestamp
+            const formattedMessage = { type: 'message', data: message, timestamp }; // JSON format message with timestamp
             socket.send(JSON.stringify(formattedMessage)); // Send message as JSON
-            document.getElementById('chat').innerHTML += `<p><strong>${username}:</strong> ${message}</p>`;
+            document.getElementById('chat').innerHTML += `<p><strong>${username}:</strong> ${message} <small>${timestamp}</small></p>`;
             document.getElementById('message').value = ''; // Clear the input field
         } else {
             alert("WebSocket is not connected or message is empty.");
         }
+    }
+
+    // Function to get the current timestamp in HH:MM AM/PM format
+    function getCurrentTimestamp() {
+        const now = new Date();
+        return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
   </script>
 </body>
