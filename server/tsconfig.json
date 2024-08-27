@@ -6,9 +6,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
-    "rootDir": "./src"
+    "outDir": "./dist",  // Output directory for compiled files
+    "rootDir": "./src"    // Root directory for TypeScript files
   },
-  "include": ["src"],
+  "include": ["./src"],    // Include the src folder (relative to tsconfig.json)
   "exclude": ["node_modules"]
 }
