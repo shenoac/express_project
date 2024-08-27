@@ -1,46 +1,47 @@
 import express from 'express';
-import { createServer } from 'http';  // For creating the HTTP server
-import { Server as SocketIOServer } from 'socket.io';  // Import Socket.IO
-import dotenv from 'dotenv'
-
-dotenv.config();
+import { createServer } from 'http';
+import path from 'path';
+import { Server as SocketIOServer } from 'socket.io';
+import cors from 'cors';
 
 const app = express();
-const port = process.env.PORT || 3000;
-
-app.use(express.json());
-app.use(express.static('../client/public'));
-
-app.get('/', (req, res) => {
-  res.send('Welcome to the Express App!');
-});
-
-// Create an HTTP server and attach Socket.IO to it
 const server = createServer(app);
+
+// Add CORS middleware to allow requests from your frontend
+app.use(cors({ origin: 'http://localhost:3001' })); // This is where your React app runs
+
+// Configure Socket.IO to also handle CORS
 const io = new SocketIOServer(server, {
   cors: {
-    origin: "*",  // Enable CORS if needed
+    origin: 'http://localhost:3001', // Allow connections from the React app
+    methods: ['GET', 'POST'],
   },
 });
 
-io.on('connection', (socket) => {
-  console.log('A user connected');
+// Serve static files from the React frontend app
+app.use(express.static(path.join(__dirname, '../../client/build')));
 
-  // Handle incoming messages
-  socket.on('message', (data) => {
-    console.log('Received message:', data);
-    // Broadcast the message to all connected clients
-    io.emit('message', data);
+// Serve frontend app for any other request
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../client/build', 'index.html'));
+});
+
+// Handle WebSocket connections
+io.on('connection', (socket) => {
+  console.log(`New connection: ${socket.id}`);
+
+  socket.on('message', (message) => {
+    console.log(`Received message: ${message}`);
+    socket.broadcast.emit('message', message); // Broadcast to other clients
   });
 
-  // Handle user disconnecting
   socket.on('disconnect', () => {
-    console.log('A user disconnected');
+    console.log(`Socket disconnected: ${socket.id}`);
   });
 });
 
+// Start the server
+const port = process.env.PORT || 3000;
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
-
-export default app;
