@@ -2,9 +2,11 @@ import React, { useEffect } from 'react';
 import  io  from 'socket.io-client';
 
 
+const socket = io(process.env.NODE_ENV === 'production' 
+  ? 'https://express-project-1b7b8f3ee21b.herokuapp.com' 
+  : 'http://localhost:3000');
 
 
-const socket = io('http://localhost:3000');
 
 const App = () => {
   useEffect(() => {
