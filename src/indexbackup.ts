@@ -3,20 +3,11 @@ import dotenv from 'dotenv';
 import studentRoutes from './routes/students';
 import logRequest from './middleware/logRequest';
 import { WebSocketServer, WebSocket } from 'ws';
-import { Pool } from 'pg'; // Import the pg library for database connection
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-
-// Set up database connection using the pg Pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,  // Necessary for Heroku SSL connections
-  },
-});
 
 app.use(express.json());
 app.use(logRequest);
@@ -45,7 +36,7 @@ wss.on('connection', (ws) => {
 
   let username: string;
 
-  ws.on('message', async (message) => {
+  ws.on('message', (message) => {
     try {
       const msgData = JSON.parse(message.toString());
       console.log('Received message:', msgData);
@@ -55,20 +46,11 @@ wss.on('connection', (ws) => {
         username = msgData.data;
         broadcast({ type: 'notification', data: `${username} has joined the chat` }, ws);
       } else if (msgData.type === 'message') {
-        // Generate a timestamp on the server
-        const timestamp = new Date().toISOString();
-
-        // Save the message to the database
-        await pool.query(
-          'INSERT INTO messages (username, message, timestamp) VALUES ($1, $2, $3)',
-          [username, msgData.data, timestamp]
-        );
-
-        // Broadcast user messages with the generated timestamp
-        broadcast({ type: 'message', username, data: msgData.data, timestamp }, ws);
+        // Broadcast user messages
+        broadcast({ type: 'message', username, data: msgData.data, timestamp: msgData.timestamp }, ws);
       }
     } catch (error) {
-      console.error('Error parsing message or saving to database:', error);
+      console.error('Error parsing message:', error);
       ws.send(JSON.stringify({ type: 'error', data: 'Invalid message format' }));
     }
   });
@@ -96,3 +78,4 @@ function broadcast(message: any, sender: WebSocket) {
 }
 
 export default app;
+

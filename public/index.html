@@ -96,7 +96,7 @@
     socket.onopen = function() {
         console.log("WebSocket is open now.");
         askForUsername(); // Ask for username once the connection is open
-        document.getElementById('chat').innerHTML += "<p>Connected to the server</p>";
+        document.getElementById('chat').innerHTML += "<p>You're connected :)</p>";
     };
 
     socket.onmessage = function(event) {
