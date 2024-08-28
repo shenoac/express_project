@@ -1,48 +1,31 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
-import type { Socket } from 'socket.io-client';  // Correctly importing the Socket type
+// Import necessary modules from React and Socket.IO client
+import { createContext, useContext } from 'react';
+import io from 'socket.io-client';
 
-interface SocketContextType {
-  socket: Socket | null;
+declare global {
+  interface Window {
+    socket: any; // You can use a more specific type if you know it (e.g., SocketIOClient.Socket)
+  }
 }
 
-const SocketContext = createContext<SocketContextType | undefined>(undefined);
+// Initialize a Socket.IO connection using the correct environment
+export const socket = io ('http://localhost:3000')  // Use localhost for development
 
-export const useSocket = () => {
-  const context = useContext(SocketContext);
-  if (!context) {
-    throw new Error('useSocket must be used within a SocketProvider');
-  }
-  return context;
-};
+// Create a context to store the socket instance, which can be accessed by any component in the app
+export const SocketContext = createContext(socket);
+window.socket = socket;
 
-export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [socket, setSocket] = useState<Socket | null>(null);
-
-  useEffect(() => {
-    // Set up the socket connection based on the environment
-    const socketConnection: Socket = io(process.env.NODE_ENV === 'production'
-      ? 'https://express-project-1b7b8f3ee21b.herokuapp.com'
-      : 'http://localhost:3000');
-    
-    setSocket(socketConnection);
-
-    socketConnection.on('connect', () => {
-      console.log('Connected to server');
-    });
-
-    socketConnection.on('message', (message) => {
-      console.log('Received message:', message);
-    });
-
-    return () => {
-      socketConnection.disconnect();
-    };
-  }, []);
-
+// Define a provider component to wrap around the app and provide the socket instance to all child components
+function SocketsProvider({ children }: { children: React.ReactNode }) {
   return (
-    <SocketContext.Provider value={{ socket }}>
-      {children}
+    // Use the context provider to pass the socket instance to any component that needs it
+    <SocketContext.Provider value={socket}>
+      {children} {/* Render any child components passed to the provider */}
     </SocketContext.Provider>
   );
-};
+}
+
+// Custom hook to allow easy access to the socket context in any component
+export const useSockets = () => useContext(SocketContext);
+
+export default SocketsProvider;

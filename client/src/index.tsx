@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+
 import App from './App';
-import { SocketProvider } from './context/SocketContext';
+import SocketsProvider from './context/SocketContext';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -10,8 +10,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <SocketProvider>
+    <SocketsProvider>
       <App />
-    </SocketProvider>
+    </SocketsProvider>
   </React.StrictMode>
 );

@@ -1,21 +1,23 @@
 import express from 'express';
 import { createServer } from 'http';
 import path from 'path';
-import { Server as SocketIOServer } from 'socket.io';
+import { Server as SocketIOServer, Socket } from 'socket.io';
 import cors from 'cors';
 
 const app = express();
 const server = createServer(app);
 
-// Add CORS middleware to allow requests from your frontend
-app.use(cors({ origin: 'http://localhost:3001' })); // This is where your React app runs
+// Set CORS options based on environment
+const corsOptions = process.env.NODE_ENV === 'production'
+  ? { origin: 'https://your-production-domain.com', methods: ['GET', 'POST'], credentials: true }
+  : { origin: ['http://localhost:3000', 'http://localhost:3001'], methods: ['GET', 'POST'], credentials: true };
 
-// Configure Socket.IO to also handle CORS
+// Add CORS middleware to allow requests from your frontend
+app.use(cors(corsOptions));
+
+// Configure Socket.IO to handle WebSocket connections and handle CORS
 const io = new SocketIOServer(server, {
-  cors: {
-    origin: 'http://localhost:3001', // Allow connections from the React app
-    methods: ['GET', 'POST'],
-  },
+  cors: corsOptions,
 });
 
 // Serve static files from the React frontend app
@@ -27,14 +29,17 @@ app.get('*', (req, res) => {
 });
 
 // Handle WebSocket connections
-io.on('connection', (socket) => {
+io.on('connection', (socket: Socket) => {
   console.log(`New connection: ${socket.id}`);
 
-  socket.on('message', (message) => {
-    console.log(`Received message: ${message}`);
-    socket.broadcast.emit('message', message); // Broadcast to other clients
+  // Handle message sending
+  socket.on('sendMessage', (message: string) => {
+    console.log(`Message received: ${message}`);
+    // Broadcast the message to all clients
+    io.emit('receiveMessage', message);
   });
 
+  // Handle disconnection
   socket.on('disconnect', () => {
     console.log(`Socket disconnected: ${socket.id}`);
   });
