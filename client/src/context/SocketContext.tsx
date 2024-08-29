@@ -9,7 +9,11 @@ declare global {
 }
 
 // Initialize a Socket.IO connection using the correct environment
-export const socket = io ('http://localhost:3000')  // Use localhost for development
+export const socket = io(
+  process.env.NODE_ENV === 'production'
+    ? 'https://express-project-1b7b8f3ee21b.herokuapp.com/'  // Production URL
+    : 'http://localhost:3000'               // Development URL
+);
 
 // Create a context to store the socket instance, which can be accessed by any component in the app
 export const SocketContext = createContext(socket);

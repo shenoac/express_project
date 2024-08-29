@@ -9,7 +9,7 @@ const server = createServer(app);
 
 // Set CORS options based on environment
 const corsOptions = process.env.NODE_ENV === 'production'
-  ? { origin: 'https://your-production-domain.com', methods: ['GET', 'POST'], credentials: true }
+  ? { origin: 'https://express-project-1b7b8f3ee21b.herokuapp.com/', methods: ['GET', 'POST'], credentials: true }
   : { origin: ['http://localhost:3000', 'http://localhost:3001'], methods: ['GET', 'POST'], credentials: true };
 
 // Add CORS middleware to allow requests from your frontend
