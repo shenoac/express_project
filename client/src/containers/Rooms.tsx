@@ -1,10 +1,9 @@
-import { useEffect, useState, useRef } from 'react';
 import { useSockets } from '../context/SocketContext';
+import { useEffect, useRef } from 'react';
 
 function RoomsContainer() {
-  const { socket, rooms, setRooms } = useSockets();
+  const { socket, rooms, setRooms, setCurrentRoom, currentRoom } = useSockets();
   const roomNameRef = useRef<HTMLInputElement>(null);
-  const [currentRoom, setCurrentRoom] = useState<string | null>(null);
 
   const handleCreateRoom = () => {
     const roomName = roomNameRef.current?.value;
@@ -14,16 +13,13 @@ function RoomsContainer() {
     }
   };
 
-  const handleJoinRoom = (roomName: string) => {
-    if (currentRoom) {
-      socket.emit('leaveRoom', currentRoom);
-    }
-    socket.emit('joinRoom', roomName);
-    setCurrentRoom(roomName);
+  const handleJoinRoom = (roomId: string) => {
+    socket.emit('joinRoom', roomId);
+    setCurrentRoom(roomId);
   };
 
   useEffect(() => {
-    socket.on('rooms', (updatedRooms: string[]) => {
+    socket.on('rooms', (updatedRooms: { roomId: string; name: string }[]) => {
       setRooms(updatedRooms);
     });
 
@@ -32,13 +28,15 @@ function RoomsContainer() {
     };
   }, [socket, setRooms]);
 
+  const currentRoomName = rooms.find(room => room.roomId === currentRoom)?.name;
+
   return (
     <div className="rooms-container">
       <h2>Rooms</h2>
       <div className="rooms-list">
         {rooms.map((room, index) => (
-          <p key={index} onClick={() => handleJoinRoom(room)}>
-            {room}
+          <p key={index} onClick={() => handleJoinRoom(room.roomId)}>
+            {room.name} 
           </p>
         ))}
       </div>
@@ -46,7 +44,7 @@ function RoomsContainer() {
         <input ref={roomNameRef} placeholder="Room name" />
         <button onClick={handleCreateRoom}>Create Room</button>
       </div>
-      {currentRoom && <p>Current Room: {currentRoom}</p>}
+      {currentRoomName && <p>Current Room: {currentRoomName}</p>} {/* Display current room name */}
     </div>
   );
 }

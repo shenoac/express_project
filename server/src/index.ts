@@ -1,3 +1,4 @@
+// Server (index.ts)
 import express from 'express';
 import { createServer } from 'http';
 import path from 'path';
@@ -6,13 +7,13 @@ import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
 
 const rooms: { roomId: string; name: string }[] = [];
-const socketToRoom: { [socketId: string]: string } = {};  // Mapping of socket IDs to room IDs
+const socketToRoom: { [socketId: string]: string } = {};
 
 const app = express();
 const server = createServer(app);
 
 const corsOptions = process.env.NODE_ENV === 'production'
-  ? { origin: 'https://express-project-1b7b8f3ee21b.herokuapp.com/', methods: ['GET', 'POST'], credentials: true }
+  ? { origin: 'https://your-production-url.com', methods: ['GET', 'POST'], credentials: true }
   : { origin: ['http://localhost:3000', 'http://localhost:3001'], methods: ['GET', 'POST'], credentials: true };
 
 app.use(cors(corsOptions));
@@ -29,7 +30,7 @@ app.get('*', (req, res) => {
 
 io.on('connection', (socket: Socket) => {
   console.log(`New connection: ${socket.id}`);
-  
+
   socket.on('setUsername', (username: string) => {
     socket.data.username = username;
     console.log(`Username set for socket ${socket.id}: ${username}`);
@@ -40,43 +41,32 @@ io.on('connection', (socket: Socket) => {
     const newRoom = { roomId, name: roomName };
     rooms.push(newRoom);
     socket.join(roomId);
-    socketToRoom[socket.id] = roomId;  // Map this socket to the newly created room
-    io.emit('rooms', rooms.map(room => room.name));  // Broadcast updated room list
+    socketToRoom[socket.id] = roomId;
+    io.emit('rooms', rooms);  // Broadcast updated room list
   });
 
-  socket.on('joinRoom', (roomName: string) => {
-    const room = rooms.find(r => r.name === roomName);
+  socket.on('joinRoom', (roomId: string) => {
+    const room = rooms.find(r => r.roomId === roomId);
     if (room) {
       socket.join(room.roomId);
-      socketToRoom[socket.id] = room.roomId;  // Map this socket to the joined room
-      console.log(`Socket ${socket.id} joined room: ${roomName}`);
-      socket.emit('joinedRoom', roomName);
-    }
-  });
-
-  socket.on('leaveRoom', (roomName: string) => {
-    const room = rooms.find(r => r.name === roomName);
-    if (room) {
-      socket.leave(room.roomId);
-      delete socketToRoom[socket.id];  // Remove this socket's room mapping
-      console.log(`Socket ${socket.id} left room: ${roomName}`);
+      socketToRoom[socket.id] = room.roomId;
+      console.log(`Socket ${socket.id} joined room: ${room.name}`);
+      socket.emit('joinedRoom', room.name);
     }
   });
 
   socket.on('sendMessage', (message: { username: string; content: string; timestamp: string }) => {
-    const roomId = socketToRoom[socket.id];  // Get the room ID from the mapping
+    const roomId = socketToRoom[socket.id];
     if (roomId) {
       console.log(`Message received in room ${roomId}: ${message.content}`);
-      io.to(roomId).emit('receiveMessage', message);  // Send to specific room with username and timestamp
+      io.to(roomId).emit('receiveMessage', message);
     } else {
       console.log(`Socket ${socket.id} is not in any room.`);
     }
   });
-  
-  
 
   socket.on('disconnect', () => {
-    delete socketToRoom[socket.id];  // Clean up the room mapping on disconnect
+    delete socketToRoom[socket.id];
     console.log(`Socket disconnected: ${socket.id}`);
   });
 });

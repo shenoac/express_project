@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSockets } from '../context/SocketContext';
-import React from 'react';
 
 interface Message {
   username: string;
@@ -9,20 +8,21 @@ interface Message {
 }
 
 function MessagesContainer() {
-  const { socket, username } = useSockets();
+  const { socket, currentRoom, username } = useSockets();
   const [messages, setMessages] = useState<Message[]>([]);
   const messageRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    socket.on("receiveMessage", (message: Message) => {
-      console.log("Received message from server:", message);
-      setMessages((prevMessages) => [...prevMessages, message]);
+    if (!currentRoom) return;
+
+    socket.on('receiveMessage', (message: Message) => {
+      setMessages(prevMessages => [...prevMessages, message]);
     });
 
     return () => {
-      socket.off("receiveMessage");
+      socket.off('receiveMessage');
     };
-  }, [socket]);
+  }, [socket, currentRoom]);
 
   const handleSendMessage = () => {
     const messageContent = messageRef.current?.value;
@@ -32,8 +32,8 @@ function MessagesContainer() {
         content: messageContent,
         timestamp: new Date().toISOString(),
       };
-      socket.emit("sendMessage", message);
-      messageRef.current.value = "";
+      socket.emit('sendMessage', message);
+      messageRef.current.value = '';
     }
   };
 

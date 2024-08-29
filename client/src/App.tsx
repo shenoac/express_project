@@ -1,7 +1,9 @@
-import MessagesContainer from './containers/Messages';
-import RoomsContainer from './containers/Rooms';
+import Messages from './containers/Messages';
+import Rooms from './containers/Rooms';
 import UsernameForm from './components/UsernameForm';  // New import
 import { useSockets } from './context/SocketContext';
+import React from 'react';
+import StateViewer from './components/StateViewer'; 
 
 function App() {
   const { username } = useSockets();
@@ -13,10 +15,11 @@ function App() {
         <UsernameForm />
       ) : (
         <>
-          <RoomsContainer />
-          <MessagesContainer />
+          <Rooms />
+          <Messages />
         </>
       )}
+      <StateViewer />
     </div>
   );
 }

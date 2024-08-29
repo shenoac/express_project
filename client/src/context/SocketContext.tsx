@@ -1,42 +1,39 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-declare global {
-  interface Window {
-    socket: any;
-  }
-}
-
 export const socket = io(
   process.env.NODE_ENV === 'production'
-    ? 'https://express-project-1b7b8f3ee21b.herokuapp.com/'
+    ? 'https://your-production-url.com'
     : 'http://localhost:3000'
 );
+
+interface Room {
+  roomId: string;
+  name: string;
+}
 
 export const SocketContext = createContext({
   socket,
   currentRoom: '',
   setCurrentRoom: (room: string) => {},
-  rooms: [] as string[],
-  setRooms: (rooms: string[]) => {},
+  rooms: [] as Room[],
+  setRooms: (rooms: Room[]) => {},
   username: '',
   setUsername: (username: string) => {}
 });
 
-window.socket = socket;
-
 function SocketsProvider({ children }: { children: React.ReactNode }) {
-  const [currentRoom, setCurrentRoom] = useState<string>('');  // Added currentRoom state
-  const [rooms, setRooms] = useState<string[]>([]);
+  const [currentRoom, setCurrentRoom] = useState<string>(''); 
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [username, setUsername] = useState<string>(() => localStorage.getItem('username') || '');
 
   useEffect(() => {
-    socket.on("rooms", (updatedRooms: string[]) => {
+    socket.on('rooms', (updatedRooms: Room[]) => {
       setRooms(updatedRooms);
     });
 
     return () => {
-      socket.off("rooms");
+      socket.off('rooms');
     };
   }, []);
 
@@ -48,8 +45,8 @@ function SocketsProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     socket,
-    currentRoom,  // Include currentRoom in the context value
-    setCurrentRoom,  // Include setCurrentRoom in the context value
+    currentRoom,
+    setCurrentRoom,
     rooms,
     setRooms,
     username,
