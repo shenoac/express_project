@@ -13,7 +13,7 @@ const app = express();
 const server = createServer(app);
 
 const corsOptions = process.env.NODE_ENV === 'production'
-  ? { origin: 'https://your-production-url.com', methods: ['GET', 'POST'], credentials: true }
+  ? { origin: 'https://express-project-1b7b8f3ee21b.herokuapp.com/', methods: ['GET', 'POST'], credentials: true }
   : { origin: ['http://localhost:3000', 'http://localhost:3001'], methods: ['GET', 'POST'], credentials: true };
 
 app.use(cors(corsOptions));
