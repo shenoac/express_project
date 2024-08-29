@@ -29,6 +29,11 @@ app.get('*', (req, res) => {
 
 io.on('connection', (socket: Socket) => {
   console.log(`New connection: ${socket.id}`);
+  
+  socket.on('setUsername', (username: string) => {
+    socket.data.username = username;
+    console.log(`Username set for socket ${socket.id}: ${username}`);
+  });
 
   socket.on('createRoom', (roomName: string) => {
     const roomId = uuidv4();
@@ -59,14 +64,20 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on('sendMessage', (message: string) => {
-    const roomId = socketToRoom[socket.id];  // Get the room ID from the mapping
+    const roomId = socketToRoom[socket.id];
     if (roomId) {
-      console.log(`Message received in room ${roomId}: ${message}`);
-      io.to(roomId).emit('receiveMessage', message);  // Send to specific room
+      const fullMessage = {
+        username: socket.data.username || socket.id,  // Use the stored username or the socket ID
+        content: message,
+        timestamp: new Date().toISOString(),
+      };
+      console.log(`Message received in room ${roomId}: ${fullMessage.content}`);
+      io.to(roomId).emit('receiveMessage', fullMessage);  // Send to specific room
     } else {
       console.log(`Socket ${socket.id} is not in any room.`);
     }
   });
+  
 
   socket.on('disconnect', () => {
     delete socketToRoom[socket.id];  // Clean up the room mapping on disconnect

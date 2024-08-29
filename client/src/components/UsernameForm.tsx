@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { useSockets } from '../context/SocketContext';
 
 function UsernameForm() {
-  const { setUsername }  = useSockets();
+  const { socket, setUsername }  = useSockets(); // Destructure `socket` as well
   const [inputValue, setInputValue] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
       setUsername(inputValue.trim());
+
+      // Emit the username to the server
+      socket.emit('setUsername', inputValue.trim());
     }
   };
 
