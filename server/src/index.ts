@@ -63,20 +63,16 @@ io.on('connection', (socket: Socket) => {
     }
   });
 
-  socket.on('sendMessage', (message: string) => {
-    const roomId = socketToRoom[socket.id];
+  socket.on('sendMessage', (message: { username: string; content: string; timestamp: string }) => {
+    const roomId = socketToRoom[socket.id];  // Get the room ID from the mapping
     if (roomId) {
-      const fullMessage = {
-        username: socket.data.username || socket.id,  // Use the stored username or the socket ID
-        content: message,
-        timestamp: new Date().toISOString(),
-      };
-      console.log(`Message received in room ${roomId}: ${fullMessage.content}`);
-      io.to(roomId).emit('receiveMessage', fullMessage);  // Send to specific room
+      console.log(`Message received in room ${roomId}: ${message.content}`);
+      io.to(roomId).emit('receiveMessage', message);  // Send to specific room with username and timestamp
     } else {
       console.log(`Socket ${socket.id} is not in any room.`);
     }
   });
+  
   
 
   socket.on('disconnect', () => {
