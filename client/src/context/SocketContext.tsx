@@ -1,35 +1,55 @@
-// Import necessary modules from React and Socket.IO client
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
 declare global {
   interface Window {
-    socket: any; // You can use a more specific type if you know it (e.g., SocketIOClient.Socket)
+    socket: any;
   }
 }
 
-// Initialize a Socket.IO connection using the correct environment
+
 export const socket = io(
   process.env.NODE_ENV === 'production'
     ? 'https://express-project-1b7b8f3ee21b.herokuapp.com/'  // Production URL
     : 'http://localhost:3000'               // Development URL
 );
 
-// Create a context to store the socket instance, which can be accessed by any component in the app
-export const SocketContext = createContext(socket);
+export const SocketContext = createContext({
+  socket,
+  rooms: [] as string[],
+  setRooms: (rooms: string[]) => {}
+});
+
 window.socket = socket;
 
-// Define a provider component to wrap around the app and provide the socket instance to all child components
+
 function SocketsProvider({ children }: { children: React.ReactNode }) {
+  const [rooms, setRooms] = useState<string[]>([]);
+
+  useEffect(() => {
+    socket.on("rooms", (updatedRooms: string[]) => {
+      setRooms(updatedRooms);
+    });
+
+    return () => {
+      socket.off("rooms");
+    };
+  }, []);
+
+  const value = {
+    socket,
+    rooms,
+    setRooms,
+  };
+
   return (
-    // Use the context provider to pass the socket instance to any component that needs it
-    <SocketContext.Provider value={socket}>
-      {children} {/* Render any child components passed to the provider */}
+    <SocketContext.Provider value={value}>
+      {children}
     </SocketContext.Provider>
   );
 }
 
-// Custom hook to allow easy access to the socket context in any component
+
 export const useSockets = () => useContext(SocketContext);
 
 export default SocketsProvider;

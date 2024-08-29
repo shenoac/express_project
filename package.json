@@ -2,8 +2,11 @@
     "name": "express-project",
     "version": "1.0.0",
     "scripts": {
-      "heroku-postbuild": "cd server && npm install && npm run build && cd ../client && npm install && npm run build",
-      "start": "cd server && npm start"
+        "heroku-postbuild": "cd server && npm install && npm run build && cd ../client && npm install && npm run build",
+        "start": "cd server && npm start"
+    },
+    "dependencies": {
+        "@types/uuid": "^10.0.0",
+        "uuid": "^10.0.0"
     }
-  }
-  
+}

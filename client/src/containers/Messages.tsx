@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSockets } from '../context/SocketContext';
 
 function MessagesContainer() {
-  const socket = useSockets();
+  const { socket } = useSockets();
   const [messages, setMessages] = useState<string[]>([]);
   const messageRef = useRef<HTMLTextAreaElement>(null);
 

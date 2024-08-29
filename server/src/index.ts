@@ -3,6 +3,9 @@ import { createServer } from 'http';
 import path from 'path';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import cors from 'cors';
+import { v4 as uuidv4 } from 'uuid';
+
+const rooms: { roomId: string; name: string }[] = [];
 
 const app = express();
 const server = createServer(app);
@@ -30,6 +33,14 @@ app.get('*', (req, res) => {
 
 io.on('connection', (socket: Socket) => {
   console.log(`New connection: ${socket.id}`);
+
+  socket.on('createRoom', (roomName: string) => {
+    const roomId = uuidv4();
+    const newRoom = { roomId, name: roomName };
+    rooms.push(newRoom);
+    socket.join(roomId);
+    io.emit('rooms', rooms.map(room => room.name));  // Broadcast updated room list
+  });
 
   socket.on('sendMessage', (message: string) => {
     console.log(`Message received: ${message}`);
