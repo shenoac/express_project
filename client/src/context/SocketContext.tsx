@@ -15,6 +15,8 @@ export const socket = io(
 
 export const SocketContext = createContext({
   socket,
+  currentRoom: '',
+  setCurrentRoom: (room: string) => {},
   rooms: [] as string[],
   setRooms: (rooms: string[]) => {},
   username: '',
@@ -24,6 +26,7 @@ export const SocketContext = createContext({
 window.socket = socket;
 
 function SocketsProvider({ children }: { children: React.ReactNode }) {
+  const [currentRoom, setCurrentRoom] = useState<string>('');  // Added currentRoom state
   const [rooms, setRooms] = useState<string[]>([]);
   const [username, setUsername] = useState<string>(() => localStorage.getItem('username') || '');
 
@@ -45,6 +48,8 @@ function SocketsProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     socket,
+    currentRoom,  // Include currentRoom in the context value
+    setCurrentRoom,  // Include setCurrentRoom in the context value
     rooms,
     setRooms,
     username,

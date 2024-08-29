@@ -29,8 +29,8 @@ function MessagesContainer() {
   return (
     <div className="messages-container">
       <div className="messages-list">
-        {messages.map((message, index) => (
-          <p key={index}>{message}</p>
+        {messages.map((msg, index) => (
+          <p key={index}>{msg}</p>
         ))}
       </div>
       <div className="message-input">
