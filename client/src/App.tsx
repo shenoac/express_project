@@ -6,6 +6,7 @@ function App() {
   const [socketId, setSocketId] = useState<string | undefined>("");
   const [message, setMessage] = useState("");
 
+  // Handle setting the socket ID on connection
   useEffect(() => {
     socket.on("connect", () => {
       setSocketId(socket.id);
@@ -16,6 +17,18 @@ function App() {
     };
   }, [socket]);
 
+  // Handle receiving messages from the server
+  useEffect(() => {
+    socket.on("receiveMessage", (message: string) => {
+      console.log("Received message from server:", message);  // Log the received message
+    });
+
+    return () => {
+      socket.off("receiveMessage");
+    };
+  }, [socket]);
+
+  // Handle sending a message
   const handleMessageSend = () => {
     if (message) {
       console.log("Sending message:", message);  // Log before emitting
