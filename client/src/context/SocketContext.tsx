@@ -3,7 +3,7 @@ import io from 'socket.io-client';
 
 export const socket = io(
   process.env.NODE_ENV === 'production'
-    ? 'https://your-production-url.com'
+    ? 'https://express-project-1b7b8f3ee21b.herokuapp.com/'
     : 'http://localhost:3000'
 );
 
