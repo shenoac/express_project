@@ -11,6 +11,7 @@ function App() {
   const { username } = useSockets();
 
   return (
+    <div style={{ backgroundColor: '#f0f0f0', minHeight: '100vh', margin: 0, padding: 0, borderRadius: '8px' }}>    
     <Router>
       <Routes>
         {/* Route for the test page */}
@@ -36,6 +37,7 @@ function App() {
         />
       </Routes>
     </Router>
+    </div>
   );
 }
 
