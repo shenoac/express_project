@@ -3,6 +3,7 @@ import { useSockets } from '../context/SocketContext';
 import ButtonUsage from '../components/ButtonUsage';
 import InputField from '../components/InputField';
 import Typography from '@mui/material/Typography'; // Import Typography from Material-UI
+import Box from '@mui/material/Box'; // Import Box for layout
 
 interface Message {
   username: string;
@@ -13,7 +14,7 @@ interface Message {
 function MessagesContainer() {
   const { socket, currentRoom, username } = useSockets();
   const [messages, setMessages] = useState<Message[]>([]);
-  const messageRef = useRef<HTMLInputElement>(null); // Updated to match InputField's inputRef type
+  const messageRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!currentRoom) return;
@@ -44,15 +45,33 @@ function MessagesContainer() {
 
   return (
     <div className="messages-container">
-      <div
-        className="messages-list"
-        style={{ marginBottom: '25px' }} // Add marginBottom to create space
-      >
+      <div className="messages-list" style={{ marginBottom: '25px' }}>
         {messages.map((msg, index) => (
-          <Typography variant="body1" key={index}>
-            <strong>{msg.username}</strong>: {msg.content} 
-            <em>({new Date(msg.timestamp).toLocaleTimeString()})</em>
-          </Typography>
+          <Box
+            key={index}
+            sx={{
+              display: 'flex',
+              justifyContent: msg.username === username ? 'flex-start' : 'flex-end',
+              mb: 1,
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                maxWidth: '60%',
+                bgcolor: msg.username === username ? '#e0f7fa' : '#90caf9',
+                color: msg.username === username ? '#000' : '#fff',
+                padding: '8px 12px',
+                borderRadius: '16px',
+                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              <strong>{msg.username}</strong>: {msg.content}
+              <em style={{ fontSize: '0.8rem', display: 'block', marginTop: '4px' }}>
+                {new Date(msg.timestamp).toLocaleTimeString()}
+              </em>
+            </Typography>
+          </Box>
         ))}
       </div>
       <div className="message-input">
