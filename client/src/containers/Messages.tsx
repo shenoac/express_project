@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSockets } from '../context/SocketContext';
 import ButtonUsage from '../components/ButtonUsage';
 import InputField from '../components/InputField';
+import Typography from '@mui/material/Typography'; // Import Typography from Material-UI
 
 interface Message {
   username: string;
@@ -43,11 +44,15 @@ function MessagesContainer() {
 
   return (
     <div className="messages-container">
-      <div className="messages-list">
+      <div
+        className="messages-list"
+        style={{ marginBottom: '25px' }} // Add marginBottom to create space
+      >
         {messages.map((msg, index) => (
-          <p key={index}>
-            <strong>{msg.username}</strong>: {msg.content} <em>({new Date(msg.timestamp).toLocaleTimeString()})</em>
-          </p>
+          <Typography variant="body1" key={index}>
+            <strong>{msg.username}</strong>: {msg.content} 
+            <em>({new Date(msg.timestamp).toLocaleTimeString()})</em>
+          </Typography>
         ))}
       </div>
       <div className="message-input">

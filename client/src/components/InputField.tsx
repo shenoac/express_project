@@ -16,6 +16,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(({ label, place
       inputRef={ref} // Attach the ref to the TextField
       fullWidth
       sx={{
+        marginBottom: '10px',
         '& .MuiOutlinedInput-root': {
           bgcolor: '#fff',
           borderRadius: '8px',

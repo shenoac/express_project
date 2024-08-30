@@ -6,6 +6,7 @@ import UsernameForm from './components/UsernameForm';
 import { useSockets } from './context/SocketContext';
 import StateViewer from './components/StateViewer';
 import TestPage from './TestPage';
+import Typography from '@mui/material/Typography'; 
 
 function App() {
   const { username } = useSockets();
@@ -22,7 +23,9 @@ function App() {
             path="/"
             element={
               <div className="App" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-                <h1 style={{ textAlign: 'center', margin: '20px 0' }}>Chat App</h1>
+                <Typography variant="h3" align="center" gutterBottom>
+                  Chat!
+                </Typography>
                 {!username ? (
                   <UsernameForm />
                 ) : (

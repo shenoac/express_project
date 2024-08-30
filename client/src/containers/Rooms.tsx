@@ -2,6 +2,7 @@ import { useSockets } from '../context/SocketContext';
 import { useEffect, useRef } from 'react';
 import ButtonUsage from '../components/ButtonUsage';
 import InputField from '../components/InputField';
+import Typography from '@mui/material/Typography'; // Import Typography from Material-UI
 
 function RoomsContainer() {
   const { socket, rooms, setRooms, setCurrentRoom, currentRoom } = useSockets();
@@ -34,11 +35,23 @@ function RoomsContainer() {
 
   return (
     <div className="rooms-container">
-      <div className="rooms-list">
+      {currentRoomName && (
+        <Typography variant="h6" gutterBottom>
+          Current Room: {currentRoomName}
+        </Typography>
+      )} {/* Display current room name */}
+      <div className="rooms-list"
+      style={{ marginBottom: '25px' }}
+    >
         {rooms.map((room, index) => (
-          <p key={index} onClick={() => handleJoinRoom(room.roomId)}>
-            {room.name} 
-          </p>
+          <Typography
+            variant="body1"
+            key={index}
+            onClick={() => handleJoinRoom(room.roomId)}
+            style={{ cursor: 'pointer', marginBottom: '8px' }} // Added a bit of margin and cursor pointer for better UX
+          >
+            {room.name}
+          </Typography>
         ))}
       </div>
       <div className="create-room">
@@ -49,7 +62,6 @@ function RoomsContainer() {
         />
         <ButtonUsage onClick={handleCreateRoom} label="Create Room" />
       </div>
-      {currentRoomName && <p>Current Room: {currentRoomName}</p>} {/* Display current room name */}
     </div>
   );
 }
