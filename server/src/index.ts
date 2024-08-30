@@ -1,10 +1,25 @@
-// Server (index.ts)
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+console.log('Database URL:', process.env.DATABASE_URL);
+
 import express from 'express';
 import { createServer } from 'http';
 import path from 'path';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
+import { Pool } from 'pg';
+
+
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL, // Ensure this environment variable is set
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
 
 const rooms: { roomId: string; name: string }[] = [];
 const socketToRoom: { [socketId: string]: string } = {};
@@ -55,10 +70,24 @@ io.on('connection', (socket: Socket) => {
     }
   });
 
-  socket.on('sendMessage', (message: { username: string; content: string; timestamp: string }) => {
+  // Insert message into the database when it's sent
+  socket.on('sendMessage', async (message: {
+    message: any; username: string; content: string; timestamp: string 
+}) => {
     const roomId = socketToRoom[socket.id];
     if (roomId) {
       console.log(`Message received in room ${roomId}: ${message.content}`);
+      
+      try {
+        await pool.query(
+          'INSERT INTO messages (username, message) VALUES ($1, $2)',
+          [message.username, message.content ]
+        );
+        console.log('Message saved to database');
+      } catch (err) {
+        console.error('Error saving message to database:', err);
+      }
+
       io.to(roomId).emit('receiveMessage', message);
     } else {
       console.log(`Socket ${socket.id} is not in any room.`);
