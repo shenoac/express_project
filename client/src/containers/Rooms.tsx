@@ -1,5 +1,7 @@
 import { useSockets } from '../context/SocketContext';
 import { useEffect, useRef } from 'react';
+import ButtonUsage from '../components/ButtonUsage';
+import InputField from '../components/InputField';
 
 function RoomsContainer() {
   const { socket, rooms, setRooms, setCurrentRoom, currentRoom } = useSockets();
@@ -9,7 +11,7 @@ function RoomsContainer() {
     const roomName = roomNameRef.current?.value;
     if (roomName) {
       socket.emit('createRoom', roomName);
-      roomNameRef.current.value = '';
+      roomNameRef.current.value = ''; // Clear the input field after creating the room
     }
   };
 
@@ -32,7 +34,6 @@ function RoomsContainer() {
 
   return (
     <div className="rooms-container">
-      <h2>Rooms</h2>
       <div className="rooms-list">
         {rooms.map((room, index) => (
           <p key={index} onClick={() => handleJoinRoom(room.roomId)}>
@@ -41,8 +42,12 @@ function RoomsContainer() {
         ))}
       </div>
       <div className="create-room">
-        <input ref={roomNameRef} placeholder="Room name" />
-        <button onClick={handleCreateRoom}>Create Room</button>
+        <InputField
+          label="Room Name"
+          placeholder="Enter room name"
+          ref={roomNameRef} // Attach ref to the InputField
+        />
+        <ButtonUsage onClick={handleCreateRoom} label="Create Room" />
       </div>
       {currentRoomName && <p>Current Room: {currentRoomName}</p>} {/* Display current room name */}
     </div>

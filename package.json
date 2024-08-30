@@ -6,7 +6,13 @@
         "start": "cd server && npm start"
     },
     "dependencies": {
+        "@emotion/react": "^11.13.3",
+        "@emotion/styled": "^11.13.0",
+        "@mui/icons-material": "^6.0.1",
+        "@mui/material": "^6.0.1",
         "@types/uuid": "^10.0.0",
-        "uuid": "^10.0.0"
+        "react-router-dom": "^6.4.0",
+        "uuid": "^10.0.0",
+        "wouter": "^3.3.5"
     }
 }

@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSockets } from '../context/SocketContext';
+import ButtonUsage from '../components/ButtonUsage';
+import InputField from '../components/InputField';
 
 interface Message {
   username: string;
@@ -10,7 +12,7 @@ interface Message {
 function MessagesContainer() {
   const { socket, currentRoom, username } = useSockets();
   const [messages, setMessages] = useState<Message[]>([]);
-  const messageRef = useRef<HTMLTextAreaElement>(null);
+  const messageRef = useRef<HTMLInputElement>(null); // Updated to match InputField's inputRef type
 
   useEffect(() => {
     if (!currentRoom) return;
@@ -33,7 +35,9 @@ function MessagesContainer() {
         timestamp: new Date().toISOString(),
       };
       socket.emit('sendMessage', message);
-      messageRef.current.value = '';
+      if (messageRef.current) {
+        messageRef.current.value = ''; // Clear the input field after sending
+      }
     }
   };
 
@@ -47,8 +51,12 @@ function MessagesContainer() {
         ))}
       </div>
       <div className="message-input">
-        <textarea ref={messageRef} placeholder="Type your message"></textarea>
-        <button onClick={handleSendMessage}>Send</button>
+        <InputField
+          label="Message"
+          placeholder="Type your message..."
+          ref={messageRef} // Attach ref to the InputField
+        />
+        <ButtonUsage onClick={handleSendMessage} label="Send" />
       </div>
     </div>
   );
