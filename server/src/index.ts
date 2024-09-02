@@ -51,14 +51,25 @@ io.on('connection', (socket: Socket) => {
     console.log(`Username set for socket ${socket.id}: ${username}`);
   });
 
-  socket.on('createRoom', (roomName: string) => {
-    const roomId = uuidv4();
+  socket.on('createRoom', async (roomName: string) => {
+    const roomId = uuidv4();  // Generate a unique ID for the room
     const newRoom = { roomId, name: roomName };
-    rooms.push(newRoom);
-    socket.join(roomId);
-    socketToRoom[socket.id] = roomId;
-    io.emit('rooms', rooms);  // Broadcast updated room list
+  
+    try {
+      // Save the new room to the database
+      await pool.query(
+        'INSERT INTO rooms (roomId, name) VALUES ($1, $2)',
+        [roomId, roomName]
+      );
+      rooms.push(newRoom);  // Add the new room to the in-memory list
+      socket.join(roomId);  // Join the socket to the room
+      socketToRoom[socket.id] = roomId;  // Map the socket ID to the room ID
+      io.emit('rooms', rooms);  // Broadcast the updated room list to all clients
+    } catch (err) {
+      console.error('Error saving room to database:', err);
+    }
   });
+  
 
   socket.on('joinRoom', (roomId: string) => {
     const room = rooms.find(r => r.roomId === roomId);
