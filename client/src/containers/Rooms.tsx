@@ -17,6 +17,7 @@ function RoomsContainer() {
   };
 
   const handleJoinRoom = (roomId: string) => {
+    console.log('Joining room with ID:', roomId); // Logging the roomId
     socket.emit('joinRoom', roomId);
     setCurrentRoom(roomId);
   };
@@ -24,6 +25,7 @@ function RoomsContainer() {
   useEffect(() => {
     socket.on('rooms', (updatedRooms: { roomId: string; name: string }[]) => {
       setRooms(updatedRooms);
+      console.log('Rooms updated:', updatedRooms); // Logging updated rooms list
     });
 
     return () => {
@@ -39,16 +41,17 @@ function RoomsContainer() {
         <Typography variant="h6" gutterBottom>
           Current Room: {currentRoomName}
         </Typography>
-      )} {/* Display current room name */}
-      <div className="rooms-list"
-      style={{ marginBottom: '25px' }}
-    >
+      )} 
+      <div className="rooms-list" style={{ marginBottom: '25px' }}>
         {rooms.map((room, index) => (
           <Typography
             variant="body1"
             key={index}
-            onClick={() => handleJoinRoom(room.roomId)}
-            style={{ cursor: 'pointer', marginBottom: '8px' }} // Added a bit of margin and cursor pointer for better UX
+            onClick={() => {
+              console.log(`Room clicked: ${room.name}, ID: ${room.roomId}`);
+              handleJoinRoom(room.roomId);
+            }}
+            style={{ cursor: 'pointer', marginBottom: '8px' }}
           >
             {room.name}
           </Typography>
@@ -58,7 +61,7 @@ function RoomsContainer() {
         <InputField
           label="Room Name"
           placeholder="Enter room name"
-          ref={roomNameRef} // Attach ref to the InputField
+          ref={roomNameRef}
         />
         <ButtonUsage onClick={handleCreateRoom} label="Create Room" />
       </div>

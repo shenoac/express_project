@@ -12,8 +12,6 @@ import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
 import { Pool } from 'pg';
 
-
-
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL, // Ensure this environment variable is set
   ssl: {
@@ -21,21 +19,38 @@ const pool = new Pool({
   },
 });
 
-const rooms: { roomId: string; name: string }[] = [];
-const socketToRoom: { [socketId: string]: string } = {};
-
 const app = express();
 const server = createServer(app);
 
-const corsOptions = process.env.NODE_ENV === 'production'
-  ? { origin: 'https://express-project-1b7b8f3ee21b.herokuapp.com/', methods: ['GET', 'POST'], credentials: true }
-  : { origin: ['http://localhost:3000', 'http://localhost:3001'], methods: ['GET', 'POST'], credentials: true };
-
-app.use(cors(corsOptions));
-
 const io = new SocketIOServer(server, {
-  cors: corsOptions,
+  cors: {
+    origin: process.env.NODE_ENV === 'production'
+      ? 'https://express-project-1b7b8f3ee21b.herokuapp.com/'
+      : ['http://localhost:3000', 'http://localhost:3001'],
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
 });
+
+
+const rooms: { roomId: string; name: string }[] = [];
+
+// Load rooms from the database and ensure they're initialized in Socket.IO
+(async () => {
+  try {
+    const result = await pool.query('SELECT roomid, name FROM rooms');
+    result.rows.forEach((room: { roomid: string; name: string }) => {
+      rooms.push({ roomId: room.roomid, name: room.name }); // Map roomid to roomId
+      io.of('/').adapter.rooms.set(room.roomid, new Set()); 
+    });
+    console.log('Rooms loaded from database:', rooms);
+  } catch (err) {
+    console.error('Error loading rooms from database:', err);
+  }
+})();
+
+
+const socketToRoom: { [socketId: string]: string } = {};
 
 app.use(express.static(path.join(__dirname, '../../client/build')));
 
@@ -45,6 +60,8 @@ app.get('*', (req, res) => {
 
 io.on('connection', (socket: Socket) => {
   console.log(`New connection: ${socket.id}`);
+
+  socket.emit('rooms', rooms);
 
   socket.on('setUsername', (username: string) => {
     socket.data.username = username;
@@ -58,7 +75,7 @@ io.on('connection', (socket: Socket) => {
     try {
       // Save the new room to the database
       await pool.query(
-        'INSERT INTO rooms (roomId, name) VALUES ($1, $2)',
+        'INSERT INTO rooms (roomid, name) VALUES ($1, $2)',
         [roomId, roomName]
       );
       rooms.push(newRoom);  // Add the new room to the in-memory list
@@ -70,40 +87,45 @@ io.on('connection', (socket: Socket) => {
     }
   });
   
-
   socket.on('joinRoom', (roomId: string) => {
+    console.log(`Attempting to join room: ${roomId}`);
+    
     const room = rooms.find(r => r.roomId === roomId);
     if (room) {
       socket.join(room.roomId);
       socketToRoom[socket.id] = room.roomId;
-      console.log(`Socket ${socket.id} joined room: ${room.name}`);
+      console.log(`Socket ${socket.id} successfully joined room: ${room.name}`);
+      console.log(`Current socketToRoom mapping: ${JSON.stringify(socketToRoom)}`);
       socket.emit('joinedRoom', room.name);
+    } else {
+      console.log(`Room with ID ${roomId} not found.`);
+      socket.emit('error', 'Room not found');
     }
   });
 
-// Insert message into the database when it's sent
-socket.on('sendMessage', async (message: { username: string; content: string; timestamp: string; roomID: string }) => {
-  const roomId = socketToRoom[socket.id];  // Get the roomId from the server-side mapping
-  if (roomId) {
-    console.log(`Message received in room ${roomId}: ${message.content}`);
+  socket.on('sendMessage', async (message: { username: string; content: string; timestamp: string; roomID: string }) => {
+    const roomId = socketToRoom[socket.id];
+    console.log(`Current socketToRoom mapping: ${JSON.stringify(socketToRoom)}`);
     
-    try {
-      await pool.query(
-        'INSERT INTO messages (username, message, roomid) VALUES ($1, $2, $3)',
-        [message.username, message.content, roomId]  // Use roomId from server-side, timestamp added
-      );
-      console.log('Message saved to database');
-    } catch (err) {
-      console.error('Error saving message to database:', err);
+    if (roomId) {
+      console.log(`Message received in room ${roomId}: ${message.content}`);
+      
+      try {
+        await pool.query(
+          'INSERT INTO messages (username, message, roomid) VALUES ($1, $2, $3)',
+          [message.username, message.content, roomId]
+        );
+        console.log('Message saved to database');
+      } catch (err) {
+        console.error('Error saving message to database:', err);
+      }
+  
+      // Broadcast the message to all users in the room
+      io.to(roomId).emit('receiveMessage', message);
+    } else {
+      console.log(`Socket ${socket.id} is not in any room.`);
     }
-
-    // Broadcast the message to all users in the room
-    io.to(roomId).emit('receiveMessage', message);
-  } else {
-    console.log(`Socket ${socket.id} is not in any room.`);
-  }
-});
-
+  });
 
   socket.on('disconnect', () => {
     delete socketToRoom[socket.id];

@@ -29,13 +29,14 @@ function SocketsProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     socket.on('rooms', (updatedRooms: Room[]) => {
+      console.log('Updated rooms:', updatedRooms);  // Add this line
       setRooms(updatedRooms);
     });
-
+  
     return () => {
       socket.off('rooms');
     };
-  }, []);
+  }, [socket, setRooms]);
 
   useEffect(() => {
     if (username) {
