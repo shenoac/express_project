@@ -19,15 +19,23 @@ function MessagesContainer() {
 
   useEffect(() => {
     if (!currentRoom) return;
-
+  
+    // Handle receiving messages in real-time
     socket.on('receiveMessage', (message: Message) => {
       setMessages(prevMessages => [...prevMessages, message]);
     });
-
+  
+    // Handle receiving chat history when joining a room
+    socket.on('chatHistory', (history: Message[]) => {
+      setMessages(history);
+    });
+  
     return () => {
       socket.off('receiveMessage');
+      socket.off('chatHistory');
     };
   }, [socket, currentRoom]);
+  
 
   const handleSendMessage = () => {
     const messageContent = messageRef.current?.value;

@@ -87,7 +87,7 @@ io.on('connection', (socket: Socket) => {
     }
   });
   
-  socket.on('joinRoom', (roomId: string) => {
+  socket.on('joinRoom', async (roomId: string) => {
     console.log(`Attempting to join room: ${roomId}`);
     
     const room = rooms.find(r => r.roomId === roomId);
@@ -96,12 +96,26 @@ io.on('connection', (socket: Socket) => {
       socketToRoom[socket.id] = room.roomId;
       console.log(`Socket ${socket.id} successfully joined room: ${room.name}`);
       console.log(`Current socketToRoom mapping: ${JSON.stringify(socketToRoom)}`);
+  
+      // Retrieve the last 50 messages for the room
+      try {
+        const result = await pool.query(
+          'SELECT username, message AS content, timestamp FROM messages WHERE roomid = $1 ORDER BY timestamp DESC LIMIT 50',
+          [roomId]
+        );
+        const messages = result.rows.reverse(); // Reverse to show oldest to newest
+        socket.emit('chatHistory', messages);
+      } catch (err) {
+        console.error('Error retrieving chat history:', err);
+      }
+  
       socket.emit('joinedRoom', room.name);
     } else {
       console.log(`Room with ID ${roomId} not found.`);
       socket.emit('error', 'Room not found');
     }
   });
+  
 
   socket.on('sendMessage', async (message: { username: string; content: string; timestamp: string; roomID: string }) => {
     const roomId = socketToRoom[socket.id];
