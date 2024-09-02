@@ -9,6 +9,7 @@ interface Message {
   username: string;
   content: string;
   timestamp: string;
+  roomID: string;
 }
 
 function MessagesContainer() {
@@ -35,6 +36,7 @@ function MessagesContainer() {
         username,
         content: messageContent,
         timestamp: new Date().toISOString(),
+        roomID: currentRoom,
       };
       socket.emit('sendMessage', message);
       if (messageRef.current) {

@@ -70,29 +70,29 @@ io.on('connection', (socket: Socket) => {
     }
   });
 
-  // Insert message into the database when it's sent
-  socket.on('sendMessage', async (message: {
-    message: any; username: string; content: string; timestamp: string 
-}) => {
-    const roomId = socketToRoom[socket.id];
-    if (roomId) {
-      console.log(`Message received in room ${roomId}: ${message.content}`);
-      
-      try {
-        await pool.query(
-          'INSERT INTO messages (username, message) VALUES ($1, $2)',
-          [message.username, message.content ]
-        );
-        console.log('Message saved to database');
-      } catch (err) {
-        console.error('Error saving message to database:', err);
-      }
-
-      io.to(roomId).emit('receiveMessage', message);
-    } else {
-      console.log(`Socket ${socket.id} is not in any room.`);
+// Insert message into the database when it's sent
+socket.on('sendMessage', async (message: { username: string; content: string; timestamp: string; roomID: string }) => {
+  const roomId = socketToRoom[socket.id];  // Get the roomId from the server-side mapping
+  if (roomId) {
+    console.log(`Message received in room ${roomId}: ${message.content}`);
+    
+    try {
+      await pool.query(
+        'INSERT INTO messages (username, message, roomid) VALUES ($1, $2, $3)',
+        [message.username, message.content, roomId]  // Use roomId from server-side, timestamp added
+      );
+      console.log('Message saved to database');
+    } catch (err) {
+      console.error('Error saving message to database:', err);
     }
-  });
+
+    // Broadcast the message to all users in the room
+    io.to(roomId).emit('receiveMessage', message);
+  } else {
+    console.log(`Socket ${socket.id} is not in any room.`);
+  }
+});
+
 
   socket.on('disconnect', () => {
     delete socketToRoom[socket.id];
