@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import ButtonUsage from '../components/ButtonUsage';
 import InputField from '../components/InputField';
 import Typography from '@mui/material/Typography'; // Import Typography from Material-UI
-
+import Box from '@mui/material/Box';
 function RoomsContainer() {
   const { socket, rooms, setRooms, setCurrentRoom, currentRoom } = useSockets();
   const roomNameRef = useRef<HTMLInputElement>(null);
@@ -44,17 +44,27 @@ function RoomsContainer() {
       )} 
       <div className="rooms-list" style={{ marginBottom: '25px' }}>
         {rooms.map((room, index) => (
-          <Typography
-            variant="body1"
+          <Box
             key={index}
-            onClick={() => {
-              console.log(`Room clicked: ${room.name}, ID: ${room.roomId}`);
-              handleJoinRoom(room.roomId);
+            sx={{
+              padding: '10px',
+              marginBottom: '8px',
+              backgroundColor: room.roomId === currentRoom ? '#e0f7fa' : '#f0f0f0',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'background-color 0.3s ease',
+              '&:hover': {
+                backgroundColor: '#cfd8dc',
+              },
+              boxShadow: room.roomId === currentRoom ? '0px 0px 10px rgba(0, 0, 0, 0.2)' : 'none',
             }}
-            style={{ cursor: 'pointer', marginBottom: '8px' }}
+            onClick={() => handleJoinRoom(room.roomId)}
           >
-            {room.name}
-          </Typography>
+            <Typography variant="body1" sx={{ fontWeight: room.roomId === currentRoom ? 'bold' : 'normal' }}>
+              <i className="fas fa-door-open" style={{ marginRight: '8px' }}></i>
+              {room.name}
+            </Typography>
+          </Box>
         ))}
       </div>
       <div className="create-room">
